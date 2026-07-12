@@ -155,7 +155,7 @@ def search_bing_news(keywords, label):
 def collect_search_news(config):
     kws = config.SEARCH_KEYWORDS
     ch_kws = [k for k in kws if not k.startswith("site:") and max(ord(c) for c in k) > 0x2e80]
-    en_kws = [k for k in kws if not k.startswith("site:") and "\\u4e00" not in repr(k)]
+    en_kws = [k for k in kws if not k.startswith("site:") and max(ord(c) for c in k) <= 0x2e80]
     en = search_bing_news(en_kws, "Bing News EN")
     zh = search_bing_news(ch_kws, "Bing News ZH")
     return en, zh
@@ -193,4 +193,5 @@ def collect_all_news(config):
 
     logger.info("FINAL: EN=%d ZH=%d", len(en), len(zh))
     return en[:config.MAX_ARTICLES_ENGLISH], zh[:config.MAX_ARTICLES_CHINESE]
+
 
