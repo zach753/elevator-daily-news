@@ -1,0 +1,46 @@
+ name: Daily Elevator Newsletter
+
+ on:
+   schedule:
+     # 每天北京时间 07:00 运行 (UTC 23:00)
+     - cron: '0 23 * * *'
+   workflow_dispatch:
+     # 允许手动触发（用于调试）
+
+ concurrency:
+   group: daily-newsletter
+   cancel-in-progress: false
+
+ jobs:
+   send-newsletter:
+     name: Collect & Send Elevator News
+     runs-on: ubuntu-latest
+
+     steps:
+       - name: Checkout code
+         uses: actions/checkout@v4
+
+       - name: Set up Python 3.12
+         uses: actions/setup-python@v5
+         with:
+           python-version: '3.12'
+           cache: 'pip'
+
+       - name: Install dependencies
+         run: |
+           python -m pip install --upgrade pip
+           pip install -r requirements.txt
+
+       - name: Daily Elevator News - Collect & Send
+         env:
+           QQ_EMAIL: ${{ secrets.QQ_EMAIL }}
+           QQ_EMAIL_AUTH_CODE: ${{ secrets.QQ_EMAIL_AUTH_CODE }}
+           NEWS_RECEIVER: ${{ secrets.NEWS_RECEIVER }}
+         run: |
+           python run.py
+
+       - name: Notify on failure
+         if: failure()
+         run: |
+           echo "::warning::Elevator News 推送失败，请检查 GitHub Secrets 配置或网络连接。"
+           echo "如需手动测试：前往 Actions → Daily Elevator Newsletter → Run workflow"
